@@ -247,6 +247,7 @@ tbody tr:hover{background:var(--panel2)}
     <div id="levels"></div>
   </section>
 
+  <!-- DYNAMIC LEVEL DETAIL PAGE -->
   <section class="page" id="levelDetail">
     <button class="back-btn" id="backToListBtn">&larr; Back to List</button>
     <div id="levelDetailContent"></div>
@@ -336,6 +337,16 @@ tbody tr:hover{background:var(--panel2)}
 <div id="toast" role="status" aria-live="polite"></div>
 <footer>The BCL DemonList. Rankings from the <a href="https://aredl.net" target="_blank" rel="noopener">All Rated Extreme Demons List</a>. Not affiliated with RobTop Games.</footer>
 
+<script>
+// Shows a message on screen if the page's code crashes, handy when debugging on a phone
+addEventListener("error", function (e) {
+  if (!e.message) return;
+  var b = document.createElement("div");
+  b.style.cssText = "position:fixed;left:0;right:0;bottom:0;background:#fc036f;color:#fff;padding:10px 14px;font:14px sans-serif;z-index:9999";
+  b.textContent = "Something broke: " + e.message + " (line " + e.lineno + ")";
+  (document.body || document.documentElement).appendChild(b);
+});
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 /* ---------- SUPABASE SETTINGS ---------- */
