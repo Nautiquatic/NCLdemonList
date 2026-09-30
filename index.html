@@ -255,7 +255,7 @@ tbody tr:hover{background:var(--panel2)}
 
   <section class="page" id="players">
     <h2>Players</h2>
-    <p class="sub">Ranked by total points from verifications, progress, and completions.</p>
+    <p class="sub">The BCL friend group, ranked by total points from verifications and completions.</p>
     <p class="sub" id="verProgress"></p>
     <input type="search" id="playerSearch" placeholder="Search players" aria-label="Search players" style="margin-bottom:12px;max-width:320px">
     <div id="playerTable"></div>
@@ -381,7 +381,7 @@ const configured = !SUPABASE_URL.startsWith("YOUR_") && window.supabase;
 const db = configured ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 let LEVELS = [], loadError = "", loading = true, isAdmin = false;
 let tier = 0, query = "", currentLevelId = null, lastPage = "list";
-let editingRecordId = null, editingCompId = null;
+let editingCompId = null;
 
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const link = (url, text) => /^https?:\/\//.test(url || "") ? `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(text)}</a>` : esc(text);
@@ -397,6 +397,9 @@ function ytThumb(url) {
   const m = String(url || "").match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|live\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/);
   return m ? `<img src="https://i.ytimg.com/vi/${m[1]}/mqdefault.jpg" alt="" loading="lazy" onerror="this.remove()">` : "";
 }
+
+// YouTube refuses to play embedded videos on pages opened straight from a file (error 153), so link out instead
+const canEmbed = location.protocol !== "file:";
 
 function getYouTubeEmbed(url) {
   if (!url) return null;
@@ -447,7 +450,7 @@ async function fetchAredl(){
 // The list comes from AREDL. Supabase only holds your own extras (records, notes, overrides) keyed by GD level ID.
 async function loadLevels(){
   if (!configured){ loading = false; renderAll(); return; }
-  const [dbRes, aredl] = await Promise.all([db.from("levels").select("*, records(*)"), fetchAredl()]);
+  const [dbRes, aredl] = await Promise.all([db.from("levels").select("*"), fetchAredl()]);
   loading = false;
   if (dbRes.error){ loadError = dbRes.error.message; LEVELS = []; }
   else if (!aredl || !aredl.length){
@@ -464,7 +467,7 @@ async function loadLevels(){
         name:a.name, position:a.position, level_id:String(a.level_id),
         creator:r.creator || "", verifier:r.verifier || "", video:r.video || null,
         password:r.password || null, min_percent:r.min_percent || 100,
-        records:r.records || [], legacy:a.legacy === true || a.status === "Legacy",
+        legacy:a.legacy === true || a.status === "Legacy",
         tags:normTags(a.tags), two_player:a.two_player === true,
         _hyd:levelCache.has(a.id)
       };
@@ -569,33 +572,6 @@ async function updateLevelDetails(levelId, data, newRank, oldRank){
   await loadLevels();
 }
 
-async function addRecord(levelId, player, video, percent){
-  if (!player.trim()) return toast("Enter a player name", true);
-  levelId = await ensureRow(levelId);
-  if (!levelId) return;
-  const pct = Math.min(100, Math.max(1, parseInt(percent) || 100));
-  const { error } = await db.from("records").insert({ 
-    level_id: levelId, 
-    player: player.trim(), 
-    video: video.trim() || null,
-    percent: pct
-  });
-  if (error) return toast(error.message, true);
-  toast("Record added"); await loadLevels();
-}
-
-async function updateRecord(rid, data){
-  const { error } = await db.from("records").update(data).eq("id", rid);
-  if (error) return toast(error.message, true);
-  toast("Record updated"); await loadLevels();
-}
-
-async function deleteRecord(rid){
-  const { error } = await db.from("records").delete().eq("id", rid);
-  if (error) return toast(error.message, true);
-  toast("Record removed"); await loadLevels();
-}
-
 /* ---------- RENDER LIST & LEVEL PAGE ---------- */
 function renderTabs(){
   $("#tabs").innerHTML = TIERS.map((t,i) =>
@@ -631,7 +607,7 @@ function buildFilter(){
   const ours = new Set(COMPS.map(c => c.level_name.trim().toLowerCase()));
   return l => (!fState.tag || (l.tags || []).includes(fState.tag))
     && (!fState.two || l.two_player)
-    && (!fState.ours || (l.records || []).length > 0 || ours.has(l.name.trim().toLowerCase()));
+    && (!fState.ours || ours.has(l.name.trim().toLowerCase()));
 }
 function buildSorter(){
   if (fState.sort === "name") return (a,b) => a.name.localeCompare(b.name);
@@ -702,7 +678,6 @@ function renderLevelDetail(id) {
   hydrateLevel(level);
   const rank = level.position;
   const reqPercent = level.min_percent || 100;
-  const recs = (level.records || []).sort((a,b) => (b.percent || 100) - (a.percent || 100));
   const prevLevel = index > 0 ? LEVELS[index - 1] : null;
   const nextLevel = index < LEVELS.length - 1 ? LEVELS[index + 1] : null;
 
@@ -723,7 +698,7 @@ function renderLevelDetail(id) {
       ${(level.tags || []).length || level.two_player ? `<div class="level-tags">${tagChips(level.tags, 99, level.two_player)}</div>` : ""}
 
       <div class="video-box">
-        ${embedUrl ? `<iframe src="${embedUrl}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>` : `<div class="no-video">${level.video ? link(level.video, "Watch Verification Video ↗") : "No video available"}</div>`}
+        ${embedUrl && canEmbed ? `<iframe src="${embedUrl}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>` : `<div class="no-video">${level.video ? link(level.video, embedUrl ? "Watch on YouTube ↗" : "Watch Verification Video ↗") : "No video available"}</div>`}
       </div>
 
       <div class="stats-grid">
@@ -756,78 +731,6 @@ function renderLevelDetail(id) {
         </details>
       ` : ""}
 
-      <div class="records-section">
-        <div class="records-header">
-          <h3>Records & Progress</h3>
-          <p><b>${reqPercent}%</b> required to qualify &middot; <b>${recs.length}</b> records registered</p>
-        </div>
-
-        ${isAdmin ? `
-          <form class="card stack" id="detailAddRecForm" style="margin-bottom:20px;">
-            <h3>Add Victor / Record Progress</h3>
-            <div class="admin-row">
-              <input name="player" placeholder="Player name" required>
-              <input name="percent" type="number" min="${reqPercent}" max="100" placeholder="Progress % (e.g. 100)" value="100" required>
-            </div>
-            <div class="admin-row">
-              <input name="video" type="url" placeholder="Video proof URL">
-              <button class="btn" type="submit">Add Record</button>
-            </div>
-          </form>
-        ` : ""}
-
-        ${recs.length ? `
-          <table class="victors-table">
-            <thead>
-              <tr>
-                <th>Record Holder</th>
-                <th>Progress</th>
-                <th>Points</th>
-                <th>Video Proof</th>
-                ${isAdmin ? "<th>Admin Actions</th>" : ""}
-              </tr>
-            </thead>
-            <tbody>
-              ${recs.map(r => {
-                const recPct = r.percent || 100;
-                const recPts = calcRecordPoints(rank, recPct, reqPercent);
-                const isEditing = editingRecordId === r.id;
-
-                if (isEditing) {
-                  return `
-                    <tr>
-                      <td colspan="${isAdmin ? 5 : 4}">
-                        <form class="inline-edit-box" data-editrecid="${r.id}">
-                          <b>Edit ${esc(r.player)}:</b>
-                          <input name="editPercent" type="number" min="${reqPercent}" max="100" value="${recPct}" style="width:80px;" required>
-                          <input name="editVideo" type="url" placeholder="Video URL" value="${esc(r.video || "")}" style="flex:1;">
-                          <button class="btn mini" type="submit">Save</button>
-                          <button class="btn ghost mini" type="button" onclick="editingRecordId=null; renderLevelDetail('${level.id}');">Cancel</button>
-                        </form>
-                      </td>
-                    </tr>
-                  `;
-                }
-
-                return `
-                  <tr>
-                    <td><b>${esc(r.player)}</b></td>
-                    <td><b>${recPct}%</b></td>
-                    <td>${fmtPts(recPts)} pts</td>
-                    <td>${r.video ? link(r.video, "Watch Proof ↗") : "No video"}</td>
-                    ${isAdmin ? `
-                      <td>
-                        <button class="mini" data-editrec="${r.id}">Edit</button>
-                        <button class="mini danger" data-delrec="${r.id}">Remove</button>
-                      </td>
-                    ` : ""}
-                  </tr>
-                `;
-              }).join("")}
-            </tbody>
-          </table>
-        ` : emptyBox("No Records Yet", `Be the first person to get ${reqPercent}% or higher and submit a record!`)}
-      </div>
     </div>
   `;
 
@@ -852,14 +755,6 @@ function renderLevelDetail(id) {
       };
     }
 
-    const recForm = $("#detailAddRecForm");
-    if (recForm) {
-      recForm.onsubmit = async (e) => {
-        e.preventDefault();
-        await addRecord(level.id, e.target.player.value, e.target.video.value, e.target.percent.value);
-        renderLevelDetail(level.id);
-      };
-    }
   }
 
   navigateToPage("levelDetail");
@@ -870,10 +765,6 @@ function renderCompletionLevelDetail(levelName) {
   const matches = COMPS.filter(c => c.level_name.trim().toLowerCase() === levelName.trim().toLowerCase());
   const listLevel = LEVELS.find(l => l.name.trim().toLowerCase() === levelName.trim().toLowerCase());
   
-  if (listLevel) {
-    renderLevelDetail(listLevel.id);
-    return;
-  }
 
   const sample = matches[0] || {};
   const creator = sample.creator || "Unknown";
@@ -894,7 +785,7 @@ function renderCompletionLevelDetail(levelName) {
       </div>
 
       <div class="video-box">
-        ${embedUrl ? `<iframe src="${embedUrl}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>` : `<div class="no-video">${topVideo ? link(topVideo, "Watch Completion Video ↗") : "No video available"}</div>`}
+        ${embedUrl && canEmbed ? `<iframe src="${embedUrl}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>` : `<div class="no-video">${topVideo ? link(topVideo, embedUrl ? "Watch on YouTube ↗" : "Watch Completion Video ↗") : "No video available"}</div>`}
       </div>
 
       <div class="stats-grid">
@@ -972,21 +863,29 @@ function renderCompletionLevelDetail(levelName) {
 }
 
 function renderPlayers(){
-  const totals = new Map();
-  const add = (name, pts, kind) => {
-    const key = String(name || "").trim().toLowerCase();
-    if (!key) return;
+  const norm = s => String(s || "").trim().toLowerCase();
+  // The friend group is everyone listed in Our Completions
+  const friends = new Set();
+  COMPS.forEach(c => friends.add(norm(c.player)));
+  friends.delete("");
+
+  const totals = new Map(), counted = new Set();
+  const add = (name, pts, kind, levelKey) => {
+    const key = norm(name);
+    if (!friends.has(key) || counted.has(key + "|" + levelKey)) return; // friends only, once per level
+    counted.add(key + "|" + levelKey);
     const t = totals.get(key) || { name:String(name).trim(), pts:0, verified:0, clears:0 };
     t.pts += pts; t[kind]++;
     totals.set(key, t);
   };
   LEVELS.forEach(l => {
-    const reqP = l.min_percent || 100, ver = (l.verifier || "").trim().toLowerCase();
-    if (ver) add(l.verifier, calcRecordPoints(l.position, 100, reqP), "verified");
-    (l.records || []).forEach(r => {
-      if ((r.player || "").trim().toLowerCase() === ver) return; // don't count a verifier twice
-      add(r.player, calcRecordPoints(l.position, r.percent || 100, reqP), "clears");
-    });
+    const reqP = l.min_percent || 100;
+    if (l.verifier) add(l.verifier, calcRecordPoints(l.position, 100, reqP), "verified", l.id);
+  });
+  COMPS.forEach(c => {
+    const l = LEVELS.find(x => norm(x.name) === norm(c.level_name));
+    if (l) add(c.player, calcRecordPoints(l.position, 100, l.min_percent || 100), "clears", l.id);
+    else add(c.player, 0, "clears", "x:" + norm(c.level_name)); // level not on the AREDL list, no points
   });
   $("#verProgress").textContent = verProgress;
   const ranked = [...totals.values()].sort((a,b) => b.pts - a.pts).map((t,i) => ({ ...t, rank:i+1 }));
@@ -995,7 +894,7 @@ function renderPlayers(){
     ? `<table><thead><tr><th>Rank</th><th>Player</th><th>Verified</th><th>Clears</th><th>Points</th></tr></thead><tbody>${
         list.map(t => `<tr><td>#${t.rank}</td><td>${esc(t.name)}</td><td>${t.verified}</td><td>${t.clears}</td><td>${fmtPts(t.pts)} pts</td></tr>`).join("")
       }</tbody></table>`
-    : emptyBox(playerQuery ? "No matching players" : "No players yet", playerQuery ? "Try a different name." : "Players appear once levels have verifiers or records.");
+    : emptyBox(playerQuery ? "No matching players" : "No players yet", playerQuery ? "Try a different name." : "Players appear once you add records or completions.");
 }
 
 function renderAdmin(){
@@ -1363,20 +1262,6 @@ $("#levels").addEventListener("click", e => {
 });
 
 $("#levelDetailContent").addEventListener("click", async e => {
-  const delBtn = e.target.closest("[data-delrec]");
-  if (delBtn) {
-    await deleteRecord(delBtn.dataset.delrec);
-    if (currentLevelId) renderLevelDetail(currentLevelId);
-    return;
-  }
-
-  const editBtn = e.target.closest("[data-editrec]");
-  if (editBtn) {
-    editingRecordId = editBtn.dataset.editrec;
-    if (currentLevelId) renderLevelDetail(currentLevelId);
-    return;
-  }
-
   const delCompBtn = e.target.closest("[data-act='delcomp']");
   if (delCompBtn) {
     await deleteCompletion(delCompBtn.dataset.id);
@@ -1411,18 +1296,6 @@ $("#levelDetailContent").addEventListener("click", async e => {
 });
 
 $("#levelDetailContent").addEventListener("submit", async e => {
-  const editBox = e.target.closest("[data-editrecid]");
-  if (editBox) {
-    e.preventDefault();
-    const rid = editBox.dataset.editrecid;
-    const pct = parseInt(e.target.editPercent.value) || 100;
-    const vid = e.target.editVideo.value.trim() || null;
-    await updateRecord(rid, { percent: pct, video: vid });
-    editingRecordId = null;
-    if (currentLevelId) renderLevelDetail(currentLevelId);
-    return;
-  }
-
   const editCompForm = e.target.closest("[data-editcompid]");
   if (editCompForm) {
     e.preventDefault();
