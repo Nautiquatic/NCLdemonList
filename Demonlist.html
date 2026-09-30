@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0e0e0f">
+<title>The BCL DemonList</title>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Rubik:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0e0e0f; --panel:#161617; --panel2:#202022; --line:#2e2e31;
+  --text:#f0f0f0; --muted:#9a9a9a; --accent:#fc036f; --gold:#ffc53d;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Rubik,system-ui,sans-serif;line-height:1.5}
+h1,h2,h3{font-family:"Chakra Petch",Rubik,sans-serif}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+header{border-bottom:1px solid var(--line);background:var(--panel);position:sticky;top:0;z-index:100}
+.bar{max-width:1000px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.logo{font-family:"Chakra Petch",sans-serif;font-weight:700;font-size:1.5rem;letter-spacing:.02em;cursor:pointer}
+.logo b{color:var(--accent)}
+nav{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+nav button{background:none;border:0;color:var(--muted);font:500 1rem "Chakra Petch",sans-serif;padding:8px 14px;border-radius:6px;cursor:pointer}
+nav button:hover{color:var(--text)}
+nav button[aria-current="page"]{background:var(--panel2);color:var(--text)}
+
+main{max-width:1000px;margin:0 auto;padding:28px 20px 60px}
+.page{display:none}.page.active{display:block}
+h2{font-size:1.9rem;margin:0 0 4px}
+.sub{color:var(--muted);margin:0 0 20px}
+
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.tabs{display:flex;gap:6px}
+.tabs button{background:var(--panel);border:1px solid var(--line);color:var(--muted);font:500 .95rem "Chakra Petch",sans-serif;padding:7px 14px;border-radius:6px;cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+input[type=search]{flex:1;min-width:180px;background:var(--panel);border:1px solid var(--line);color:var(--text);padding:8px 12px;border-radius:6px;font:inherit}
+
+.row{display:grid;grid-template-columns:64px 1fr auto;gap:14px;align-items:center;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px;padding:12px 16px;margin-bottom:8px;cursor:pointer;width:100%;text-align:left;color:inherit;font:inherit;transition:background .15s}
+.row:hover{background:var(--panel2)}
+.rank{font:700 1.6rem "Chakra Petch",sans-serif;color:var(--accent)}
+.row.top .rank{color:var(--gold)}
+.name{font:700 1.15rem "Chakra Petch",sans-serif}
+.by{color:var(--muted);font-size:.9rem}
+.pts{font:500 .95rem "Chakra Petch",sans-serif;color:var(--muted)}
+
+/* LEVEL PAGE UI */
+.level-container{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:28px;margin-top:10px}
+.level-nav-bar{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:12px}
+.level-title{font-size:2.2rem;margin:0;text-align:center;color:#fff}
+.nav-arrow{background:var(--panel2);border:1px solid var(--line);color:var(--text);font:700 1.2rem "Chakra Petch",sans-serif;padding:6px 16px;border-radius:6px;cursor:pointer;transition:all .15s}
+.nav-arrow:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.nav-arrow:disabled{opacity:.3;cursor:not-allowed}
+.level-byline{text-align:center;color:var(--muted);font-size:1.05rem;margin-bottom:16px}
+.level-byline b{color:var(--text)}
+
+.video-box{position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:8px;border:1px solid var(--line);background:#000;margin:0 auto 24px;max-width:800px}
+.video-box iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0}
+.no-video{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--muted);font-family:"Chakra Petch",sans-serif;text-align:center}
+
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;text-align:center;margin-bottom:28px;background:var(--panel2);padding:18px;border-radius:8px;border:1px solid var(--line)}
+.stat-item .label{font:700 .8rem "Chakra Petch",sans-serif;color:var(--muted);text-transform:uppercase;margin-bottom:4px}
+.stat-item .val{font:700 1.1rem "Chakra Petch",sans-serif;color:var(--text)}
+
+.records-section{margin-top:32px;border-top:1px solid var(--line);padding-top:24px}
+.records-header{text-align:center;margin-bottom:20px}
+.records-header h3{font-size:1.7rem;margin:0 0 6px}
+.records-header p{color:var(--muted);margin:0;font-size:.95rem}
+
+.victors-table{width:100%;border-collapse:collapse;margin-top:12px;background:var(--panel2);border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+.victors-table th,.victors-table td{padding:12px 16px;text-align:left;border-bottom:1px solid var(--line)}
+.victors-table th{color:var(--muted);font:700 .85rem "Chakra Petch",sans-serif;text-transform:uppercase;background:rgba(0,0,0,.2)}
+.victors-table tr:last-child td{border-bottom:0}
+
+.back-btn{background:var(--panel2);border:1px solid var(--line);color:var(--text);font:700 .9rem "Chakra Petch",sans-serif;padding:8px 16px;border-radius:6px;cursor:pointer;margin-bottom:16px;display:inline-flex;align-items:center;gap:6px}
+.back-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+.level-click{cursor:pointer;transition:color .15s}
+.level-click:hover{color:var(--accent);text-decoration:underline}
+
+.empty{border:2px dashed var(--line);border-radius:10px;padding:40px 20px;text-align:center;color:var(--muted)}
+.empty strong{display:block;color:var(--text);font:700 1.2rem "Chakra Petch",sans-serif;margin-bottom:4px}
+
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font:500 .9rem "Chakra Petch",sans-serif}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px 20px;margin-bottom:14px}
+.card h3{margin:0 0 6px}
+.card ul{margin:0;padding-left:20px}
+footer{text-align:center;color:var(--muted);font-size:.85rem;padding:20px}
+@media(max-width:560px){.row{grid-template-columns:48px 1fr}.pts{grid-column:2}nav{margin-left:0;width:100%}}
+
+.stack{display:flex;flex-direction:column;gap:10px;max-width:500px}
+.stack input,.admin-row input,.admin-row select{background:var(--bg);border:1px solid var(--line);color:var(--text);padding:8px 12px;border-radius:6px;font:inherit}
+.btn{background:var(--accent);border:0;color:#fff;font:700 1rem "Chakra Petch",sans-serif;padding:10px 16px;border-radius:6px;cursor:pointer}
+.btn.ghost{background:none;border:1px solid var(--line);color:var(--muted)}
+.admin-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.admin-row input,.admin-row select{flex:1;min-width:120px}
+.mini{background:var(--panel2);border:1px solid var(--line);color:var(--text);font:500 .85rem "Chakra Petch",sans-serif;padding:5px 10px;border-radius:5px;cursor:pointer}
+.mini.danger{color:var(--accent);border-color:var(--accent)}
+.mini:disabled{opacity:.3;cursor:not-allowed}
+
+select{background:var(--panel);border:1px solid var(--line);color:var(--text);padding:8px 12px;border-radius:6px;font:inherit;cursor:pointer}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:18px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 16px;min-width:0}
+.stat b{display:block;font:700 1.7rem "Chakra Petch",sans-serif;color:var(--accent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stat b.sm{font-size:1.1rem;padding:6px 0}
+.stat span{color:var(--muted);font-size:.85rem}
+.count{color:var(--muted);font-size:.9rem;margin:0 0 10px}
+.comp{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px;padding:12px 16px;margin-bottom:8px}
+.comp.top{border-left-color:var(--gold)}
+.comp.top .rank{color:var(--gold)}
+.badge{display:inline-block;font:500 .75rem "Chakra Petch",sans-serif;padding:1px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);margin-right:6px}
+.badge.rank-badge{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700}
+.badge.gold-badge{background:var(--gold);color:#000;border-color:var(--gold);font-weight:700}
+.watch{font:500 .85rem "Chakra Petch",sans-serif;color:var(--text);background:var(--panel2);border:1px solid var(--line);padding:5px 12px;border-radius:5px;text-decoration:none;white-space:nowrap}
+.watch:hover{border-color:var(--accent);color:var(--accent)}
+.pcard h3{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.pcard li{margin-bottom:6px}
+.who{font-weight:500;color:var(--text)}
+.badge.diff{color:var(--accent);border-color:var(--accent)}
+details.card summary{cursor:pointer;font:700 1.1rem "Chakra Petch",sans-serif}
+details.card[open] summary{margin-bottom:6px}
+@media(max-width:560px){.comp{grid-template-columns:1fr}.comp .watch,.comp .mini{justify-self:start}}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--line);padding:10px 18px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:1000}
+#toast.show{opacity:1}#toast.bad{border-color:var(--accent);color:var(--accent)}
+.inline-edit-box{background:var(--panel2);border:1px solid var(--line);padding:12px;border-radius:6px;margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* ---------- UI POLISH ---------- */
+html{scroll-behavior:smooth}
+::selection{background:var(--accent);color:#fff}
+body::before{content:"";position:fixed;inset:0 0 auto 0;height:340px;background:radial-gradient(60% 100% at 50% 0,rgba(252,3,111,.15),transparent);pointer-events:none;z-index:-1}
+header{background:rgba(22,22,23,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 1px 0 rgba(252,3,111,.25)}
+.logo{transition:transform .15s}.logo:hover{transform:scale(1.03)}
+nav button{transition:color .15s,background .15s}
+nav button:hover{background:var(--panel2)}
+nav button[aria-current="page"]{background:transparent;box-shadow:inset 0 -2px 0 var(--accent)}
+h2::after{content:"";display:block;width:44px;height:3px;background:var(--accent);border-radius:2px;margin-top:8px}
+.sub{margin-top:10px}
+.page.active{animation:fadeUp .25s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+input[type=search],.stack input,select{transition:border-color .15s,box-shadow .15s}
+input[type=search]:focus,.stack input:focus,select:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px rgba(252,3,111,.18)}
+.tabs button{transition:background .15s,color .15s}
+.tabs button:hover{color:var(--text)}
+.tabs button[aria-pressed="true"]{box-shadow:0 4px 14px rgba(252,3,111,.35)}
+.btn{transition:filter .15s,transform .1s}.btn:hover{filter:brightness(1.12)}.btn:active{transform:scale(.98)}
+
+.row{transition:transform .15s,background .15s,border-color .15s,box-shadow .15s}
+.row:hover{transform:translateX(3px);box-shadow:0 4px 18px rgba(0,0,0,.35)}
+.rank{font-variant-numeric:tabular-nums}
+.pts{background:var(--panel2);padding:3px 12px;border-radius:999px;white-space:nowrap}
+.row.top{border-left-color:var(--gold);background:linear-gradient(90deg,rgba(255,197,61,.09),var(--panel) 45%)}
+.row.top:hover{background:linear-gradient(90deg,rgba(255,197,61,.14),var(--panel2) 45%)}
+
+tbody tr{transition:background .12s}
+tbody tr:hover{background:var(--panel2)}
+#playerTable tbody tr:nth-child(1) td:first-child{color:var(--gold);font-weight:700}
+#playerTable tbody tr:nth-child(2) td:first-child{color:#c6ccd6;font-weight:700}
+#playerTable tbody tr:nth-child(3) td:first-child{color:#d98a4e;font-weight:700}
+#playerTable table{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+#playerTable td:last-child,#playerTable th:last-child{text-align:right}
+
+.card{transition:border-color .15s}.card:hover{border-color:#44444a}
+.level-container{box-shadow:0 10px 40px rgba(0,0,0,.35)}
+.stat{transition:border-color .15s,transform .15s}.stat:hover{border-color:var(--accent);transform:translateY(-2px)}
+
+#toTop{position:fixed;right:18px;bottom:20px;width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--panel2);color:var(--text);font:700 1.2rem "Chakra Petch",sans-serif;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .2s,border-color .15s,color .15s;z-index:90}
+#toTop.show{opacity:1;pointer-events:auto}
+#toTop:hover{border-color:var(--accent);color:var(--accent)}
+
+*{scrollbar-width:thin;scrollbar-color:#3a3a3f transparent}
+@media(max-width:700px){
+  nav{flex-wrap:nowrap;overflow-x:auto;margin-left:0;width:100%;padding-bottom:2px}
+  nav button{white-space:nowrap}
+  .bar{gap:10px}
+  .level-container{padding:18px}.level-title{font-size:1.6rem}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+.thumb{width:112px;height:63px;border-radius:6px;background:var(--panel2);border:1px solid var(--line);overflow:hidden;display:block}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .2s}
+.row:hover .thumb img{transform:scale(1.06)}
+@media(min-width:561px){.row{grid-template-columns:64px 112px 1fr auto}}
+@media(max-width:560px){.thumb{display:none}}
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.chk{display:flex;align-items:center;gap:6px;color:var(--muted);cursor:pointer;font-size:.95rem}
+.chk input{accent-color:var(--accent)}
+.viewtoggle{margin-left:auto;display:flex}
+.viewtoggle button{background:var(--panel);border:1px solid var(--line);color:var(--muted);font:500 .9rem "Chakra Petch",sans-serif;padding:7px 14px;cursor:pointer}
+.viewtoggle button:first-child{border-radius:6px 0 0 6px}.viewtoggle button:last-child{border-radius:0 6px 6px 0;border-left:0}
+.viewtoggle button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.tag{font:500 .72rem "Chakra Petch",sans-serif;padding:1px 8px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--muted)}
+.tag.tp{background:rgba(252,3,111,.15);border-color:var(--accent);color:var(--accent)}
+.level-tags{display:flex;justify-content:center;margin:-6px 0 16px}
+.level-tags .tags{justify-content:center}.level-tags .tag{font-size:.85rem;padding:2px 12px}
+#levels.grid-view{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;align-items:start}
+#levels.grid-view .row{display:flex;flex-direction:column;align-items:stretch;gap:8px;margin:0;border-left:1px solid var(--line);border-top:4px solid var(--accent);padding:12px}
+#levels.grid-view .row.top{border-top-color:var(--gold)}
+#levels.grid-view .row:hover{transform:translateY(-3px)}
+#levels.grid-view .thumb{display:block;width:100%;height:auto;aspect-ratio:16/9}
+#levels.grid-view .pts{align-self:flex-start}
+#levels.grid-view .empty,#levels.grid-view #showMore{grid-column:1/-1}
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <div class="logo" id="logoBtn">The BCL Demon<b>List</b></div>
+    <nav aria-label="Main">
+      <button data-page="list" aria-current="page">List</button>
+      <button data-page="players">Players</button>
+      <button data-page="completions">Our Completions</button>
+      <button data-page="submit">Submit a record</button>
+      <button data-page="rules">Rules</button>
+      <button data-page="admin">Admin</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- MAIN LIST PAGE -->
+  <section class="page active" id="list">
+    <h2>Demon list</h2>
+    <p class="sub">The hardest Geometry Dash levels, ranked by difficulty.</p>
+    <div class="tools">
+      <div class="tabs" id="tabs"></div>
+      <input type="search" id="search" placeholder="Search all levels or creators" aria-label="Search all levels or creators">
+    </div>
+    <div class="filters" id="filters">
+      <select id="fTag" aria-label="Filter by tag"><option value="">All tags</option></select>
+      <select id="fSort" aria-label="Sort levels">
+        <option value="rank">Sort: Rank</option>
+        <option value="name">Sort: Name A to Z</option>
+        <option value="nameDesc">Sort: Name Z to A</option>
+      </select>
+      <label class="chk"><input type="checkbox" id="fTwo"> 2-player</label>
+      <label class="chk"><input type="checkbox" id="fOurs"> Beaten by us</label>
+      <button class="mini" id="fClear" type="button">Clear</button>
+      <span class="viewtoggle" role="group" aria-label="View">
+        <button type="button" id="vList" aria-pressed="true">List</button>
+        <button type="button" id="vGrid" aria-pressed="false">Grid</button>
+      </span>
+    </div>
+    <div id="levels"></div>
+  </section>
+
+  <!-- DYNAMIC LEVEL DETAIL PAGE -->
+  <section class="page" id="levelDetail">
+    <button class="back-btn" id="backToListBtn">&larr; Back to List</button>
+    <div id="levelDetailContent"></div>
+  </section>
+
+  <section class="page" id="players">
+    <h2>Players</h2>
+    <p class="sub">Ranked by total points from verifications, progress, and completions.</p>
+    <p class="sub" id="verProgress"></p>
+    <input type="search" id="playerSearch" placeholder="Search players" aria-label="Search players" style="margin-bottom:12px;max-width:320px">
+    <div id="playerTable"></div>
+  </section>
+
+  <section class="page" id="completions">
+    <h2>Our Completions</h2>
+    <p class="sub">Every demon the crew has beaten. Click any level to view its full details and victors.</p>
+    <div id="compAdmin"></div>
+    <div class="stats" id="compStats"></div>
+    <div class="tools">
+      <div class="tabs" id="cView" aria-label="View">
+        <button data-v="feed" aria-pressed="true">Feed</button>
+        <button data-v="player" aria-pressed="false">By player</button>
+        <button data-v="level" aria-pressed="false">By level</button>
+      </div>
+      <input type="search" id="cSearch" placeholder="Search levels, creators or players" aria-label="Search completions">
+      <select id="cPlayer" aria-label="Filter by player"><option value="all">All players</option></select>
+      <select id="cDiff" aria-label="Filter by difficulty"><option value="all">All difficulties</option></select>
+      <select id="cSort" aria-label="Sort">
+        <option value="new">Newest first</option>
+        <option value="old">Oldest first</option>
+        <option value="custom">Custom Placement Order</option>
+        <option value="rank">Demonlist Rank (#1 first)</option>
+        <option value="level">Level A-Z</option>
+        <option value="player">Player A-Z</option>
+        <option value="attempts">Fewest attempts</option>
+      </select>
+      <button class="mini" id="cExport" type="button">Export CSV</button>
+    </div>
+    <p class="count" id="compCount"></p>
+    <div id="compList"></div>
+  </section>
+
+  <section class="page" id="submit">
+    <h2>Submit a record</h2>
+    <p class="sub">Records are reviewed by the list team before they appear.</p>
+    <div class="card">
+      <h3>What to include</h3>
+      <ul>
+        <li>Level name and your username</li>
+        <li>A link to an uncut video of the completion/progress</li>
+        <li>Your progress percentage achieved</li>
+        <li>Your attempt count, if you know it</li>
+      </ul>
+    </div>
+    <div class="card"><h3>Where to send it</h3>Add your submission link or Discord invite here.</div>
+  </section>
+
+  <section class="page" id="rules">
+    <h2>Rules</h2>
+    <p class="sub">Edit these to match your list.</p>
+    <div class="card">
+      <h3>Level requirements</h3>
+      <ul>
+        <li>Rated Extreme Demon or higher, or approved by the list team</li>
+        <li>Publicly available and not deleted</li>
+        <li>Verified by a legitimate completion</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Record requirements</h3>
+      <ul>
+        <li>No hacks, macros, or bots</li>
+        <li>Progress must meet or exceed the level's minimum requirement percentage</li>
+        <li>Full run recorded, start to finish</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="page" id="admin">
+    <h2>Admin</h2>
+    <p class="sub">Log in to add records and edit level details.</p>
+    <div id="adminBody"></div>
+  </section>
+</main>
+
+<button id="toTop" aria-label="Back to top">&uarr;</button>
+<div id="toast" role="status" aria-live="polite"></div>
+<footer>The BCL DemonList. Rankings from the <a href="https://aredl.net" target="_blank" rel="noopener">All Rated Extreme Demons List</a>. Not affiliated with RobTop Games.</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+/* ---------- SUPABASE SETTINGS ---------- */
+const SUPABASE_URL = "https://qehiboovwhworkpzbyxs.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlaGlib292d2h3b3JrcHpieXhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2ODY5MDMsImV4cCI6MjEwNjI2MjkwM30.-GQ05RU5PvL6z0Kph9fGLbnrYEulHwhy_QP_EV71Uyw";
+
+const AREDL_API = "https://api.aredl.net/v2";
+
+/* ---------- POINT FORMULA ---------- */
+const TIERS = [
+  { label:"Main", from:1, to:75 },
+  { label:"Extended", from:76, to:150 },
+  { label:"Legacy", from:151, to:Infinity }
+];
+
+// #1 is worth 1000 points and the last level on the list is worth 1, with a smooth curve in between.
+const TOP_POINTS = 1000, BOTTOM_POINTS = 1;
+const points = rank => {
+  const bottom = LEVELS.length ? LEVELS[LEVELS.length - 1].position : 1;
+  if (bottom <= 1 || rank <= 1) return TOP_POINTS;
+  const t = Math.min(1, (rank - 1) / (bottom - 1));
+  return Math.round(TOP_POINTS * Math.pow(BOTTOM_POINTS / TOP_POINTS, t) * 100) / 100;
+};
+const fmtPts = n => (Math.round(n * 100) / 100).toLocaleString(undefined, { minimumFractionDigits:2, maximumFractionDigits:2 });
+
+function calcRecordPoints(rank, percent = 100, minPercent = 100) {
+  const fullPts = points(rank);
+  const p = Number(percent) || 100;
+  if (p >= 100) return fullPts;
+  
+  const req = Number(minPercent) || 100;
+  if (p < req || req >= 100) return 0;
+  
+  const range = Math.max(1, 99 - req);
+  const scale = Math.min(1, Math.max(0, (p - req) / range));
+  return Math.round(fullPts * 0.60 * scale * 100) / 100;
+}
+
+/* ---------- APP STATE ---------- */
+const $ = s => document.querySelector(s);
+const configured = !SUPABASE_URL.startsWith("YOUR_") && window.supabase;
+const db = configured ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+let LEVELS = [], loadError = "", loading = true, isAdmin = false;
+let tier = 0, query = "", currentLevelId = null, lastPage = "list";
+let editingRecordId = null, editingCompId = null;
+
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const link = (url, text) => /^https?:\/\//.test(url || "") ? `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(text)}</a>` : esc(text);
+
+function getLevelRank(levelName) {
+  if (!levelName || !LEVELS.length) return null;
+  const level = LEVELS.find(l => l.name.trim().toLowerCase() === String(levelName).trim().toLowerCase());
+  return level ? (level.position || null) : null;
+}
+
+// Small preview picture for a YouTube link (empty string when there is no usable video yet)
+function ytThumb(url) {
+  const m = String(url || "").match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|live\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/);
+  return m ? `<img src="https://i.ytimg.com/vi/${m[1]}/mqdefault.jpg" alt="" loading="lazy" onerror="this.remove()">` : "";
+}
+
+function getYouTubeEmbed(url) {
+  if (!url) return null;
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/);
+  return match ? `https://www.youtube.com/embed/${match[1]}` : null;
+}
+
+let toastTimer;
+function toast(msg, bad){
+  const t = $("#toast");
+  t.textContent = msg; t.className = "show" + (bad ? " bad" : "");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.className = "", 3500);
+}
+
+function navigateToPage(pageId) {
+  document.querySelectorAll("nav button").forEach(x => {
+    x.setAttribute("aria-current", x.dataset.page === pageId ? "page" : "false");
+  });
+  document.querySelectorAll(".page").forEach(p => p.classList.toggle("active", p.id === pageId));
+  if (pageId === "players") syncVerifiers();
+  if (location.hash !== "#" + pageId) history.replaceState(null, "", "#" + pageId);
+}
+
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => navigateToPage(b.dataset.page));
+$("#logoBtn").onclick = () => navigateToPage("list");
+$("#backToListBtn").onclick = () => {
+  const target = lastPage === "completions" ? "completions" : "list";
+  navigateToPage(target);
+};
+
+/* ---------- DATA MANAGEMENT ---------- */
+async function fetchAredl(){
+  try {
+    const res = await fetch(AREDL_API + "/api/aredl/levels");
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const j = await res.json();
+    const arr = Array.isArray(j) ? j : (j.data || []);
+    const list = arr.filter(a => a && a.level_id != null && a.position != null).sort((a,b) => a.position - b.position);
+    try { localStorage.setItem("bcl_aredl_list_v1", JSON.stringify(list.map(a => ({ id:a.id, level_id:a.level_id, position:a.position, name:a.name, legacy:a.legacy, status:a.status, tags:a.tags, two_player:a.two_player })))); } catch (e) {}
+    return list;
+  } catch (err) {
+    console.warn("AREDL fetch failed, trying saved copy", err);
+    try { const saved = JSON.parse(localStorage.getItem("bcl_aredl_list_v1") || "null"); if (saved && saved.length){ toast("AREDL is unreachable, showing your last saved copy", true); return saved; } } catch (e) {}
+    return null;
+  }
+}
+
+// The list comes from AREDL. Supabase only holds your own extras (records, notes, overrides) keyed by GD level ID.
+async function loadLevels(){
+  if (!configured){ loading = false; renderAll(); return; }
+  const [dbRes, aredl] = await Promise.all([db.from("levels").select("*, records(*)"), fetchAredl()]);
+  loading = false;
+  if (dbRes.error){ loadError = dbRes.error.message; LEVELS = []; }
+  else if (!aredl || !aredl.length){
+    // AREDL unreachable: fall back to whatever is saved in Supabase
+    loadError = ""; toast("Could not reach AREDL, showing saved levels only", true);
+    LEVELS = dbRes.data.map(r => ({ ...r, dbId:r.id })).sort((a,b) => a.position - b.position);
+  } else {
+    loadError = "";
+    const rows = new Map(dbRes.data.map(r => [String(r.level_id), r]));
+    LEVELS = aredl.map(a => {
+      const r = rows.get(String(a.level_id)) || {};
+      return {
+        ...r, id:"aredl-" + a.level_id, dbId:r.id || null, aredl_id:a.id,
+        name:a.name, position:a.position, level_id:String(a.level_id),
+        creator:r.creator || "", verifier:r.verifier || "", video:r.video || null,
+        password:r.password || null, min_percent:r.min_percent || 100,
+        records:r.records || [], legacy:a.legacy === true || a.status === "Legacy",
+        tags:normTags(a.tags), two_player:a.two_player === true,
+        _hyd:levelCache.has(a.id)
+      };
+    });
+    LEVELS.forEach(l => { const c = levelCache.get(l.aredl_id); if (c) Object.assign(l, { creator:l.creator || c.creator, verifier:l.verifier || c.verifier, video:l.video || c.video, tags:l.tags.length ? l.tags : (c.tags || []), two_player:l.two_player || !!c.two_player }); });
+  }
+  renderAll();
+  if (currentLevelId) renderLevelDetail(currentLevelId);
+}
+
+// Creator, verifier and video are only on AREDL's per-level endpoint, so fetch them when a level is opened
+const levelCache = new Map();
+const CACHE_KEY = "bcl_aredl_levels_v1";
+try { JSON.parse(localStorage.getItem(CACHE_KEY) || "[]").forEach(([k, v]) => levelCache.set(k, v)); } catch (err) {}
+function saveLevelCache(){ try { localStorage.setItem(CACHE_KEY, JSON.stringify([...levelCache])); } catch (err) {} }
+const normTags = t => (Array.isArray(t) ? t : []).map(x => typeof x === "string" ? x : (x && (x.name || x.tag || x.label)) || "").filter(Boolean);
+const aredlInfo = d => {
+  const v = (d.verifications || [])[0] || {}, who = u => u ? (u.global_name || u.username || "") : "";
+  return { creator:who(d.publisher), verifier:who(v.submitted_by), video:v.video_url || null, tags:normTags(d.tags), two_player:d.two_player === true };
+};
+
+// Fetches every level's verifier from AREDL in the background (a few at a time), remembering results in this browser
+let verSyncRunning = false, verProgress = "";
+async function syncVerifiers(){
+  if (verSyncRunning || !LEVELS.length) return;
+  verSyncRunning = true;
+  const all = LEVELS.filter(l => l.aredl_id), todo = all.filter(l => !levelCache.has(l.aredl_id));
+  let done = all.length - todo.length, stopped = false;
+  const worker = async () => {
+    while (todo.length && !stopped){
+      const l = todo.shift();
+      try {
+        const res = await fetch(AREDL_API + "/api/aredl/levels/" + l.aredl_id);
+        if (res.status === 429){ stopped = true; break; }
+        if (res.ok){
+          const info = aredlInfo(await res.json());
+          levelCache.set(l.aredl_id, info); l._hyd = true;
+          l.creator = l.creator || info.creator; l.verifier = l.verifier || info.verifier; l.video = l.video || info.video; if (!(l.tags || []).length) l.tags = info.tags || []; l.two_player = l.two_player || !!info.two_player;
+        }
+      } catch (err) {}
+      done++;
+      if (done % 25 === 0){ saveLevelCache(); verProgress = `Loading verifiers from AREDL: ${done} / ${all.length}`; renderPlayers(); }
+    }
+  };
+  if (todo.length) verProgress = `Loading verifiers from AREDL: ${done} / ${all.length}`;
+  await Promise.all(Array.from({ length:6 }, worker));
+  saveLevelCache();
+  verProgress = stopped ? "Paused because AREDL asked us to slow down. Open this tab again to continue." : "";
+  verSyncRunning = false;
+  renderPlayers(); renderLevels();
+}
+async function hydrateLevel(l){
+  if (!l.aredl_id || l._hyd) return;
+  l._hyd = true;
+  try {
+    const res = await fetch(AREDL_API + "/api/aredl/levels/" + l.aredl_id);
+    if (!res.ok) return;
+    const d = await res.json(), v = (d.verifications || [])[0] || {};
+    const who = u => u ? (u.global_name || u.username || "") : "";
+    const info = aredlInfo(d);
+    levelCache.set(l.aredl_id, info); saveLevelCache();
+    l.creator = l.creator || info.creator; l.verifier = l.verifier || info.verifier; l.video = l.video || info.video; if (!(l.tags || []).length) l.tags = info.tags || []; l.two_player = l.two_player || !!info.two_player;
+    if (currentLevelId === l.id) renderLevelDetail(l.id);
+    renderLevels();
+  } catch (err) { console.warn("AREDL detail failed", err); }
+}
+
+// Levels only get a Supabase row once you add something to them (a record or an edit)
+async function ensureRow(id){
+  const l = LEVELS.find(x => x.id === id);
+  if (!l) return null;
+  if (l.dbId) return l.dbId;
+  const { data, error } = await db.from("levels").insert({
+    name:l.name, creator:l.creator || "Unknown", verifier:l.verifier || "Unknown",
+    level_id:l.level_id, video:l.video || null, position:l.position, min_percent:100
+  }).select().single();
+  if (error){ toast(error.message, true); return null; }
+  l.dbId = data.id;
+  return data.id;
+}
+
+async function updateLevelDetails(levelId, data, newRank, oldRank){
+  levelId = await ensureRow(levelId);
+  if (!levelId) return;
+  if (false) { // rank now comes from AREDL
+    const targetRank = Math.max(1, parseInt(newRank) || oldRank);
+    if (targetRank !== oldRank) {
+      const levelsToShift = LEVELS.filter(l => l.id !== levelId && l.position >= targetRank);
+      const shifts = levelsToShift.map(l =>
+        db.from("levels").update({ position: l.position + 1 }).eq("id", l.id)
+      );
+      const shifted = await Promise.all(shifts);
+      const shiftErr = shifted.find(r => r.error)?.error;
+      if (shiftErr) return toast(shiftErr.message, true);
+      data.position = targetRank;
+    }
+  }
+
+  const { error } = await db.from("levels").update(data).eq("id", levelId);
+  if (error) return toast(error.message, true);
+  toast("Level updated successfully");
+  await loadLevels();
+}
+
+async function addRecord(levelId, player, video, percent){
+  if (!player.trim()) return toast("Enter a player name", true);
+  levelId = await ensureRow(levelId);
+  if (!levelId) return;
+  const pct = Math.min(100, Math.max(1, parseInt(percent) || 100));
+  const { error } = await db.from("records").insert({ 
+    level_id: levelId, 
+    player: player.trim(), 
+    video: video.trim() || null,
+    percent: pct
+  });
+  if (error) return toast(error.message, true);
+  toast("Record added"); await loadLevels();
+}
+
+async function updateRecord(rid, data){
+  const { error } = await db.from("records").update(data).eq("id", rid);
+  if (error) return toast(error.message, true);
+  toast("Record updated"); await loadLevels();
+}
+
+async function deleteRecord(rid){
+  const { error } = await db.from("records").delete().eq("id", rid);
+  if (error) return toast(error.message, true);
+  toast("Record removed"); await loadLevels();
+}
+
+/* ---------- RENDER LIST & LEVEL PAGE ---------- */
+function renderTabs(){
+  $("#tabs").innerHTML = TIERS.map((t,i) =>
+    `<button aria-pressed="${i===tier}" data-i="${i}">${t.label}</button>`).join("");
+  $("#tabs").querySelectorAll("button").forEach(b => b.onclick = () => { tier = +b.dataset.i; renderTabs(); renderLevels(); });
+}
+
+function emptyBox(title, text){ return `<div class="empty"><strong>${title}</strong>${text}</div>`; }
+
+let listLimit = 100, listSig = "";
+/* ---------- FILTERS, TAGS AND VIEW ---------- */
+const fState = { tag:"", sort:"rank", two:false, ours:false };
+let viewMode = "list", tagCount = -1;
+try { viewMode = localStorage.getItem("bcl_view") === "grid" ? "grid" : "list"; } catch (e) {}
+
+function tagChips(tags, max, twoPlayer){
+  const t = tags || [];
+  const chips = (twoPlayer ? ['<span class="tag tp">2-Player</span>'] : [])
+    .concat(t.slice(0, max).map(x => `<span class="tag">${esc(x)}</span>`));
+  if (t.length > max) chips.push(`<span class="tag more">+${t.length - max}</span>`);
+  return chips.length ? `<span class="tags">${chips.join("")}</span>` : "";
+}
+function refreshTagOptions(){
+  const all = new Set();
+  LEVELS.forEach(l => (l.tags || []).forEach(x => all.add(x)));
+  if (all.size === tagCount) return;
+  tagCount = all.size;
+  const sel = $("#fTag");
+  sel.innerHTML = '<option value="">All tags</option>' + [...all].sort().map(x => `<option value="${esc(x)}">${esc(x)}</option>`).join("");
+  sel.value = all.has(fState.tag) ? fState.tag : "";
+}
+function buildFilter(){
+  const ours = new Set(COMPS.map(c => c.level_name.trim().toLowerCase()));
+  return l => (!fState.tag || (l.tags || []).includes(fState.tag))
+    && (!fState.two || l.two_player)
+    && (!fState.ours || (l.records || []).length > 0 || ours.has(l.name.trim().toLowerCase()));
+}
+function buildSorter(){
+  if (fState.sort === "name") return (a,b) => a.name.localeCompare(b.name);
+  if (fState.sort === "nameDesc") return (a,b) => b.name.localeCompare(a.name);
+  return (a,b) => a.rank - b.rank;
+}
+function setView(v){
+  viewMode = v;
+  try { localStorage.setItem("bcl_view", v); } catch (e) {}
+  $("#vList").setAttribute("aria-pressed", v === "list");
+  $("#vGrid").setAttribute("aria-pressed", v === "grid");
+  renderLevels();
+}
+$("#fTag").onchange = e => { fState.tag = e.target.value; renderLevels(); };
+$("#fSort").onchange = e => { fState.sort = e.target.value; renderLevels(); };
+$("#fTwo").onchange = e => { fState.two = e.target.checked; renderLevels(); };
+$("#fOurs").onchange = e => { fState.ours = e.target.checked; renderLevels(); };
+$("#fClear").onclick = () => {
+  Object.assign(fState, { tag:"", sort:"rank", two:false, ours:false });
+  $("#fTag").value = ""; $("#fSort").value = "rank"; $("#fTwo").checked = false; $("#fOurs").checked = false;
+  renderLevels();
+};
+$("#vList").onclick = () => setView("list");
+$("#vGrid").onclick = () => setView("grid");
+$("#vList").setAttribute("aria-pressed", viewMode === "list");
+$("#vGrid").setAttribute("aria-pressed", viewMode === "grid");
+
+function renderLevels(){
+  const t = TIERS[tier], q = query.toLowerCase(), box = $("#levels");
+  const passFilters = buildFilter(), sorter = buildSorter();
+  refreshTagOptions();
+  box.classList.toggle("grid-view", viewMode === "grid");
+  if (!configured) return box.innerHTML = emptyBox("Supabase not connected", "Add your project URL and anon key.");
+  if (loading) return box.innerHTML = emptyBox("Loading", "Fetching the list.");
+  if (loadError) return box.innerHTML = emptyBox("Could not load levels", esc(loadError));
+  if (!LEVELS.length) return box.innerHTML = emptyBox("No levels yet", "AREDL returned no levels.");
+  
+  const items = LEVELS.map(l => ({...l, rank: l.position}))
+    .filter(l => q || (l.rank >= t.from && l.rank <= t.to))
+    .filter(l => !q || l.name.toLowerCase().includes(q) || (l.creator||"").toLowerCase().includes(q))
+    .filter(passFilters).sort(sorter);
+  
+  if (!items.length) return box.innerHTML = emptyBox("Nothing here", q ? "No levels match your search in any section." : "This section has no levels yet.");
+
+  const sig = [tier, query, JSON.stringify(fState), viewMode].join("|");
+  if (sig !== listSig){ listSig = sig; listLimit = 100; }
+  const more = items.length - listLimit;
+  box.innerHTML = items.slice(0, listLimit).map(l => `
+    <div class="row ${l.rank<=3?"top":""}" data-id="${l.id}">
+      <span class="rank">#${l.rank}</span>
+      <span class="thumb">${ytThumb(l.video)}</span>
+      <span><span class="name">${esc(l.name)}</span>${l.creator ? `<br><span class="by">by ${esc(l.creator)}</span>` : ""}${tagChips(l.tags, 4)}</span>
+      <span class="pts">${fmtPts(points(l.rank))} pts</span>
+    </div>
+  `).join("") + (more > 0 ? `<button class="btn ghost" id="showMore">Show ${Math.min(100, more)} more (${more} left)</button>` : "");
+}
+$("#levels").addEventListener("click", e => {
+  if (e.target.id === "showMore"){ listLimit += 100; renderLevels(); }
+});
+
+/* ---------- MAIN LEVEL PAGE ---------- */
+function renderLevelDetail(id) {
+  currentLevelId = id;
+  const index = LEVELS.findIndex(l => l.id === id);
+  if (index === -1) return;
+
+  const level = LEVELS[index];
+  hydrateLevel(level);
+  const rank = level.position;
+  const reqPercent = level.min_percent || 100;
+  const recs = (level.records || []).sort((a,b) => (b.percent || 100) - (a.percent || 100));
+  const prevLevel = index > 0 ? LEVELS[index - 1] : null;
+  const nextLevel = index < LEVELS.length - 1 ? LEVELS[index + 1] : null;
+
+  const embedUrl = getYouTubeEmbed(level.video);
+  $("#backToListBtn").innerHTML = `&larr; Back to ${lastPage === "completions" ? "Our Completions" : "Demon List"}`;
+
+  $("#levelDetailContent").innerHTML = `
+    <div class="level-container">
+      <div class="level-nav-bar">
+        <button class="nav-arrow" id="prevLevelBtn" ${!prevLevel ? "disabled" : ""} title="${prevLevel ? prevLevel.name : ''}">&lt;</button>
+        <h2 class="level-title">#${rank} - ${esc(level.name)}</h2>
+        <button class="nav-arrow" id="nextLevelBtn" ${!nextLevel ? "disabled" : ""} title="${nextLevel ? nextLevel.name : ''}">&gt;</button>
+      </div>
+
+      <div class="level-byline">
+        by <b>${esc(level.creator || "Unknown")}</b>, verified by <b>${esc(level.verifier || "Unknown")}</b>
+      </div>
+      ${(level.tags || []).length || level.two_player ? `<div class="level-tags">${tagChips(level.tags, 99, level.two_player)}</div>` : ""}
+
+      <div class="video-box">
+        ${embedUrl ? `<iframe src="${embedUrl}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>` : `<div class="no-video">${level.video ? link(level.video, "Watch Verification Video ↗") : "No video available"}</div>`}
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-item"><div class="label">Level Password</div><div class="val">${esc(level.password || "Free Copy")}</div></div>
+        <div class="stat-item"><div class="label">Level ID</div><div class="val">${esc(level.level_id || "N/A")}</div></div>
+        <div class="stat-item"><div class="label">Min. Required %</div><div class="val">${reqPercent}%</div></div>
+        <div class="stat-item"><div class="label">100% Score</div><div class="val">${fmtPts(points(rank))} pts</div></div>
+      </div>
+
+      ${isAdmin ? `
+        <details class="card" style="margin-bottom:24px;">
+          <summary>Admin: Edit Level Details (rank comes from AREDL)</summary>
+          <form id="editLevelForm" style="margin-top:12px;">
+            <div class="admin-row">
+              <input name="name" placeholder="Level Name" value="${esc(level.name)}" required>
+              <input name="rank" type="hidden" value="${rank}">
+              <input name="password" placeholder="Password (e.g. Free Copy)" value="${esc(level.password || "")}">
+            </div>
+            <div class="admin-row">
+              <input name="level_id" placeholder="Level ID" value="${esc(level.level_id || "")}">
+              <input name="min_percent" type="number" min="1" max="100" placeholder="Min % Required" value="${reqPercent}">
+              <input name="video" type="url" placeholder="Verification Video URL" value="${esc(level.video || "")}">
+            </div>
+            <div class="admin-row">
+              <input name="creator" placeholder="Creator" value="${esc(level.creator || "")}">
+              <input name="verifier" placeholder="Verifier" value="${esc(level.verifier || "")}">
+              <button class="btn" type="submit">Save Level Details & Rank</button>
+            </div>
+          </form>
+        </details>
+      ` : ""}
+
+      <div class="records-section">
+        <div class="records-header">
+          <h3>Records & Progress</h3>
+          <p><b>${reqPercent}%</b> required to qualify &middot; <b>${recs.length}</b> records registered</p>
+        </div>
+
+        ${isAdmin ? `
+          <form class="card stack" id="detailAddRecForm" style="margin-bottom:20px;">
+            <h3>Add Victor / Record Progress</h3>
+            <div class="admin-row">
+              <input name="player" placeholder="Player name" required>
+              <input name="percent" type="number" min="${reqPercent}" max="100" placeholder="Progress % (e.g. 100)" value="100" required>
+            </div>
+            <div class="admin-row">
+              <input name="video" type="url" placeholder="Video proof URL">
+              <button class="btn" type="submit">Add Record</button>
+            </div>
+          </form>
+        ` : ""}
+
+        ${recs.length ? `
+          <table class="victors-table">
+            <thead>
+              <tr>
+                <th>Record Holder</th>
+                <th>Progress</th>
+                <th>Points</th>
+                <th>Video Proof</th>
+                ${isAdmin ? "<th>Admin Actions</th>" : ""}
+              </tr>
+            </thead>
+            <tbody>
+              ${recs.map(r => {
+                const recPct = r.percent || 100;
+                const recPts = calcRecordPoints(rank, recPct, reqPercent);
+                const isEditing = editingRecordId === r.id;
+
+                if (isEditing) {
+                  return `
+                    <tr>
+                      <td colspan="${isAdmin ? 5 : 4}">
+                        <form class="inline-edit-box" data-editrecid="${r.id}">
+                          <b>Edit ${esc(r.player)}:</b>
+                          <input name="editPercent" type="number" min="${reqPercent}" max="100" value="${recPct}" style="width:80px;" required>
+                          <input name="editVideo" type="url" placeholder="Video URL" value="${esc(r.video || "")}" style="flex:1;">
+                          <button class="btn mini" type="submit">Save</button>
+                          <button class="btn ghost mini" type="button" onclick="editingRecordId=null; renderLevelDetail('${level.id}');">Cancel</button>
+                        </form>
+                      </td>
+                    </tr>
+                  `;
+                }
+
+                return `
+                  <tr>
+                    <td><b>${esc(r.player)}</b></td>
+                    <td><b>${recPct}%</b></td>
+                    <td>${fmtPts(recPts)} pts</td>
+                    <td>${r.video ? link(r.video, "Watch Proof ↗") : "No video"}</td>
+                    ${isAdmin ? `
+                      <td>
+                        <button class="mini" data-editrec="${r.id}">Edit</button>
+                        <button class="mini danger" data-delrec="${r.id}">Remove</button>
+                      </td>
+                    ` : ""}
+                  </tr>
+                `;
+              }).join("")}
+            </tbody>
+          </table>
+        ` : emptyBox("No Records Yet", `Be the first person to get ${reqPercent}% or higher and submit a record!`)}
+      </div>
+    </div>
+  `;
+
+  if (prevLevel) $("#prevLevelBtn").onclick = () => renderLevelDetail(prevLevel.id);
+  if (nextLevel) $("#nextLevelBtn").onclick = () => renderLevelDetail(nextLevel.id);
+
+  if (isAdmin) {
+    const editLvlForm = $("#editLevelForm");
+    if (editLvlForm) {
+      editLvlForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const newRank = parseInt(e.target.rank.value) || rank;
+        await updateLevelDetails(level.id, {
+          name: e.target.name.value.trim(),
+          password: e.target.password.value.trim() || null,
+          level_id: e.target.level_id.value.trim() || null,
+          video: e.target.video.value.trim() || null,
+          min_percent: parseInt(e.target.min_percent.value) || 100,
+          creator: e.target.creator.value.trim(),
+          verifier: e.target.verifier.value.trim()
+        }, newRank, rank);
+      };
+    }
+
+    const recForm = $("#detailAddRecForm");
+    if (recForm) {
+      recForm.onsubmit = async (e) => {
+        e.preventDefault();
+        await addRecord(level.id, e.target.player.value, e.target.video.value, e.target.percent.value);
+        renderLevelDetail(level.id);
+      };
+    }
+  }
+
+  navigateToPage("levelDetail");
+}
+
+/* ---------- AUTOMATICALLY GENERATED COMPLETION LEVEL PAGE ---------- */
+function renderCompletionLevelDetail(levelName) {
+  const matches = COMPS.filter(c => c.level_name.trim().toLowerCase() === levelName.trim().toLowerCase());
+  const listLevel = LEVELS.find(l => l.name.trim().toLowerCase() === levelName.trim().toLowerCase());
+  
+  if (listLevel) {
+    renderLevelDetail(listLevel.id);
+    return;
+  }
+
+  const sample = matches[0] || {};
+  const creator = sample.creator || "Unknown";
+  const diff = sample.difficulty || "Demon";
+  const topVideo = matches.find(m => m.video)?.video || null;
+  const embedUrl = getYouTubeEmbed(topVideo);
+
+  $("#backToListBtn").innerHTML = `&larr; Back to Our Completions`;
+
+  $("#levelDetailContent").innerHTML = `
+    <div class="level-container">
+      <div class="level-nav-bar">
+        <h2 class="level-title">${esc(levelName)}</h2>
+      </div>
+
+      <div class="level-byline">
+        by <b>${esc(creator)}</b> &middot; Crew Completion Level
+      </div>
+
+      <div class="video-box">
+        ${embedUrl ? `<iframe src="${embedUrl}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>` : `<div class="no-video">${topVideo ? link(topVideo, "Watch Completion Video ↗") : "No video available"}</div>`}
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-item"><div class="label">Difficulty</div><div class="val">${esc(diff)}</div></div>
+        <div class="stat-item"><div class="label">Total Crew Clears</div><div class="val">${matches.length}</div></div>
+        <div class="stat-item"><div class="label">Creator</div><div class="val">${esc(creator)}</div></div>
+      </div>
+
+      <div class="records-section">
+        <div class="records-header">
+          <h3>Crew Victors</h3>
+          <p><b>${matches.length}</b> crew member${matches.length === 1 ? "" : "s"} cleared this level</p>
+        </div>
+
+        <table class="victors-table">
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th>Attempts</th>
+              <th>Date Completed</th>
+              <th>Video Proof</th>
+              ${isAdmin ? "<th>Action</th>" : ""}
+            </tr>
+          </thead>
+          <tbody>
+            ${matches.map((c, idx) => {
+              if (editingCompId === c.id) {
+                return `
+                  <tr>
+                    <td colspan="${isAdmin ? 5 : 4}">
+                      <form class="inline-edit-box" data-editcompid="${c.id}" data-fromdetail="${esc(levelName)}">
+                        <b>Edit ${esc(c.player)}'s placement:</b>
+                        <input name="level_name" type="hidden" value="${esc(c.level_name)}">
+                        <input name="creator" type="hidden" value="${esc(c.creator || '')}">
+                        <input name="player" value="${esc(c.player)}" required style="width:110px;" placeholder="Player">
+                        <select name="difficulty" style="width:110px;">
+                          <option value="">Difficulty</option>
+                          ${DIFFS.map(d => `<option value="${esc(d)}"${c.difficulty === d ? ' selected' : ''}>${esc(d)}</option>`).join('')}
+                        </select>
+                        <input name="attempts" type="number" min="1" value="${c.attempts || ''}" style="width:80px;" placeholder="Attempts">
+                        <input name="completed_on" type="date" value="${c.completed_on || ''}" style="width:130px;">
+                        <input name="video" type="url" value="${esc(c.video || '')}" placeholder="Video URL" style="flex:1;">
+                        <input name="position" type="number" min="1" value="${c.position || ''}" style="width:65px;" placeholder="Pos">
+                        <button class="btn mini" type="submit">Save</button>
+                        <button class="btn ghost mini" type="button" onclick="editingCompId=null; renderCompletionLevelDetail('${esc(levelName)}');">Cancel</button>
+                      </form>
+                    </td>
+                  </tr>
+                `;
+              }
+              return `
+                <tr>
+                  <td><b>${esc(c.player)}</b></td>
+                  <td>${c.attempts ? esc(c.attempts) : "N/A"}</td>
+                  <td>${fmtDate(c.completed_on) || "N/A"}</td>
+                  <td>${c.video ? link(c.video, "Watch Proof ↗") : "No video"}</td>
+                  ${isAdmin ? `
+                    <td>
+                      <button class="mini" data-act="moveup" data-id="${esc(c.id)}" ${idx === 0 ? 'disabled' : ''} title="Move placement up">▲</button>
+                      <button class="mini" data-act="movedown" data-id="${esc(c.id)}" ${idx === matches.length - 1 ? 'disabled' : ''} title="Move placement down">▼</button>
+                      <button class="mini" data-act="editcomp" data-id="${esc(c.id)}">Edit</button>
+                      <button class="mini danger" data-act="delcomp" data-id="${esc(c.id)}">Remove</button>
+                    </td>
+                  ` : ""}
+                </tr>
+              `;
+            }).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  navigateToPage("levelDetail");
+}
+
+function renderPlayers(){
+  const totals = new Map();
+  const add = (name, pts, kind) => {
+    const key = String(name || "").trim().toLowerCase();
+    if (!key) return;
+    const t = totals.get(key) || { name:String(name).trim(), pts:0, verified:0, clears:0 };
+    t.pts += pts; t[kind]++;
+    totals.set(key, t);
+  };
+  LEVELS.forEach(l => {
+    const reqP = l.min_percent || 100, ver = (l.verifier || "").trim().toLowerCase();
+    if (ver) add(l.verifier, calcRecordPoints(l.position, 100, reqP), "verified");
+    (l.records || []).forEach(r => {
+      if ((r.player || "").trim().toLowerCase() === ver) return; // don't count a verifier twice
+      add(r.player, calcRecordPoints(l.position, r.percent || 100, reqP), "clears");
+    });
+  });
+  $("#verProgress").textContent = verProgress;
+  const ranked = [...totals.values()].sort((a,b) => b.pts - a.pts).map((t,i) => ({ ...t, rank:i+1 }));
+  const list = ranked.filter(t => !playerQuery || t.name.toLowerCase().includes(playerQuery));
+  $("#playerTable").innerHTML = list.length
+    ? `<table><thead><tr><th>Rank</th><th>Player</th><th>Verified</th><th>Clears</th><th>Points</th></tr></thead><tbody>${
+        list.map(t => `<tr><td>#${t.rank}</td><td>${esc(t.name)}</td><td>${t.verified}</td><td>${t.clears}</td><td>${fmtPts(t.pts)} pts</td></tr>`).join("")
+      }</tbody></table>`
+    : emptyBox(playerQuery ? "No matching players" : "No players yet", playerQuery ? "Try a different name." : "Players appear once levels have verifiers or records.");
+}
+
+function renderAdmin(){
+  const box = $("#adminBody");
+  if (!configured) return box.innerHTML = emptyBox("Supabase not connected", "Add your project URL and anon key.");
+  if (!isAdmin) return box.innerHTML = `
+    <form class="card stack" id="loginForm">
+      <h3>Log in</h3>
+      <input name="email" type="email" placeholder="Email" autocomplete="username" required aria-label="Email">
+      <input name="password" type="password" placeholder="Password" autocomplete="current-password" required aria-label="Password">
+      <button class="btn" type="submit">Log in</button>
+    </form>`;
+  box.innerHTML = `
+    <div class="card">
+      <h3>You're logged in</h3>
+      Levels and their ranks come from AREDL automatically. Open any level to add records or edit its details.
+    </div>
+    <button class="btn ghost" id="logout">Log out</button>`;
+}
+
+/* ---------- OUR COMPLETIONS ---------- */
+let COMPS = [], compError = "", compLoading = true, cShown = [];
+const cState = { view:"feed", diff:"all", sort:"new", player:"all", q:"" };
+const DIFFS = ["Extreme Demon","Insane Demon","Hard Demon","Medium Demon","Easy Demon","Other"];
+const pkey = s => String(s ?? "").trim().toLowerCase();
+const watch = url => /^https?:\/\//.test(url || "") ? `<a class="watch" href="${esc(url)}" target="_blank" rel="noopener">Watch</a>` : "";
+const fmtDate = d => d ? new Date(d + "T00:00:00").toLocaleDateString(undefined, { year:"numeric", month:"short", day:"numeric" }) : "";
+const dateKey = c => c.completed_on || (c.created_at || "").slice(0, 10);
+
+const SORTERS = {
+  custom:   (a,b) => ((a.position ?? Infinity) - (b.position ?? Infinity)) || SORTERS.new(a,b),
+  new:      (a,b) => dateKey(b).localeCompare(dateKey(a)) || (b.created_at || "").localeCompare(a.created_at || ""),
+  old:      (a,b) => dateKey(a).localeCompare(dateKey(b)) || (a.created_at || "").localeCompare(b.created_at || ""),
+  rank:     (a,b) => {
+    const rA = getLevelRank(a.level_name) || 99999;
+    const rB = getLevelRank(b.level_name) || 99999;
+    return rA - rB || SORTERS.new(a,b);
+  },
+  level:    (a,b) => a.level_name.localeCompare(b.level_name) || a.player.localeCompare(b.player),
+  player:   (a,b) => a.player.localeCompare(b.player) || a.level_name.localeCompare(b.level_name),
+  attempts: (a,b) => ((a.attempts ?? Infinity) - (b.attempts ?? Infinity)) || SORTERS.new(a,b)
+};
+
+async function loadCompletions(){
+  if (!configured){ compLoading = false; renderCompletions(); return; }
+  let res = await db.from("completions").select("*").order("position", { ascending: true, nullsFirst: false }).order("created_at", { ascending: false });
+  if (res.error && res.error.message.includes("position")) {
+    res = await db.from("completions").select("*").order("created_at", { ascending: false });
+  }
+  compLoading = false;
+  if (res.error){ compError = res.error.message; COMPS = []; } else { compError = ""; COMPS = res.data; }
+  renderCompletions(); renderCompAdmin();
+}
+
+async function addCompletion(f){
+  const row = {
+    level_name: f.level_name.value.trim(), creator: f.creator.value.trim() || null,
+    player: f.player.value.trim(), difficulty: f.difficulty.value || null,
+    attempts: parseInt(f.attempts.value) || null, completed_on: f.completed_on.value || null,
+    video: f.video.value.trim() || null
+  };
+  if (f.position && f.position.value) {
+    row.position = parseInt(f.position.value);
+  }
+  if (!row.level_name || !row.player) return toast("Level and player are required", true);
+  const { error } = await db.from("completions").insert(row);
+  if (error) return toast(error.message, true);
+  toast(`Added ${row.player}'s clear of ${row.level_name}`);
+  f.reset(); await loadCompletions();
+}
+
+async function updateCompletion(id, data){
+  const { error } = await db.from("completions").update(data).eq("id", id);
+  if (error) return toast(error.message, true);
+  toast("Placement updated");
+  editingCompId = null;
+  await loadCompletions();
+}
+
+// Works out which rows sit together on screen (a feed, a player card, a level card or the level page table)
+function moveGroup(btn){
+  const box = btn && btn.closest("ul, tbody");
+  if (!box) return cShown;
+  return [...box.querySelectorAll("[data-act='moveup']")]
+    .map(b => COMPS.find(c => String(c.id) === b.dataset.id)).filter(Boolean);
+}
+
+async function moveCompletion(id, direction, btn, baseSort = SORTERS[cState.sort]) {
+  const sid = String(id);
+  const group = moveGroup(btn);
+  const idx = group.findIndex(c => String(c.id) === sid);
+  const targetIdx = idx + direction;
+  if (idx === -1 || targetIdx < 0 || targetIdx >= group.length) return;
+  const a = group[idx], b = group[targetIdx];
+
+  // Take the order everyone can currently see, swap the two rows, then number every row 1..n
+  const order = [...COMPS].sort(baseSort);
+  const i = order.findIndex(c => String(c.id) === String(a.id));
+  const j = order.findIndex(c => String(c.id) === String(b.id));
+  if (i === -1 || j === -1) return;
+  [order[i], order[j]] = [order[j], order[i]];
+
+  const jobs = order
+    .map((c, k) => c.position !== k + 1 ? db.from("completions").update({ position: k + 1 }).eq("id", c.id) : null)
+    .filter(Boolean);
+  const results = await Promise.all(jobs);
+  const err = results.find(r => r.error)?.error;
+  if (err) {
+    if (err.message.includes("position")) {
+      return toast("Add a 'position' (int) column to your 'completions' table in Supabase to enable reordering.", true);
+    }
+    return toast(err.message, true);
+  }
+
+  // Positions only show up in the custom order, so switch to it
+  cState.sort = "custom";
+  $("#cSort").value = "custom";
+  toast("Placement moved");
+  await loadCompletions();
+}
+
+async function deleteCompletion(id){
+  const c = COMPS.find(x => x.id === id);
+  if (!c || !confirm(`Remove ${c.player}'s clear of ${c.level_name}?`)) return;
+  const { error } = await db.from("completions").delete().eq("id", id);
+  if (error) return toast(error.message, true);
+  toast("Completion removed"); await loadCompletions();
+}
+
+function renderCompAdmin(){
+  const box = $("#compAdmin");
+  if (!configured || !isAdmin){ box.innerHTML = ""; return; }
+  const names = [...new Set(COMPS.map(c => c.player.trim()))].sort((a,b) => a.localeCompare(b));
+  const opts = names.map(n => `<option value="${esc(n)}">`).join("");
+  if ($("#compForm")){ $("#playerNames").innerHTML = opts; return; }
+  box.innerHTML = `
+    <details class="card" open>
+      <summary>Add a completion</summary>
+      <form id="compForm">
+        <div class="admin-row">
+          <input name="level_name" placeholder="Level name" required aria-label="Level name">
+          <input name="creator" placeholder="Creator" aria-label="Creator">
+          <input name="player" placeholder="Player" list="playerNames" required aria-label="Player">
+          <datalist id="playerNames">${opts}</datalist>
+        </div>
+        <div class="admin-row">
+          <select name="difficulty" aria-label="Difficulty"><option value="">Difficulty</option>${DIFFS.map(d => `<option>${d}</option>`).join("")}</select>
+          <input name="attempts" type="number" min="1" placeholder="Attempts" aria-label="Attempts">
+          <input name="completed_on" type="date" aria-label="Date completed">
+          <input name="video" type="url" placeholder="Video link (optional)" aria-label="Video link">
+          <input name="position" type="number" min="1" placeholder="Pos (optional)" aria-label="Position Order" title="Custom Placement Position">
+          <button class="btn" type="submit">Add</button>
+        </div>
+      </form>
+    </details>`;
+}
+
+function renderCompletions(){
+  const stats = $("#compStats"), list = $("#compList"), count = $("#compCount");
+  const blank = (t, m) => { stats.innerHTML = ""; count.textContent = ""; cShown = []; list.innerHTML = emptyBox(t, m); };
+  if (!configured) return blank("Supabase not connected", "Add your project URL and anon key.");
+  if (compLoading) return blank("Loading", "Fetching completions.");
+  if (compError){
+    const missing = /could not find the table|does not exist/i.test(compError);
+    return blank(missing ? "Completions table not set up" : "Could not load completions",
+      missing ? "Run the completions SQL in Supabase." : esc(compError));
+  }
+  if (!COMPS.length) return blank("No completions yet", isAdmin ? "Use the form above to add the first one." : "Log in on Admin page to add one.");
+
+  const byPlayer = new Map(), byLevel = new Map(), diffs = new Set();
+  COMPS.forEach(c => {
+    const pk = pkey(c.player), lk = pkey(c.level_name);
+    if (!byPlayer.has(pk)) byPlayer.set(pk, { name:c.player.trim(), n:0 });
+    if (!byLevel.has(lk)) byLevel.set(lk, { name:c.level_name.trim(), n:0 });
+    byPlayer.get(pk).n++; byLevel.get(lk).n++;
+    if (c.difficulty) diffs.add(c.difficulty);
+  });
+
+  if (cState.player !== "all" && !byPlayer.has(cState.player)) cState.player = "all";
+  if (cState.diff !== "all" && !diffs.has(cState.diff)) cState.diff = "all";
+  $("#cPlayer").innerHTML = `<option value="all">All players</option>` +
+    [...byPlayer.entries()].sort((a,b) => a[1].name.localeCompare(b[1].name))
+      .map(([k,p]) => `<option value="${esc(k)}"${k === cState.player ? " selected" : ""}>${esc(p.name)}</option>`).join("");
+  $("#cDiff").innerHTML = `<option value="all">All difficulties</option>` +
+    DIFFS.filter(d => diffs.has(d)).concat([...diffs].filter(d => !DIFFS.includes(d)))
+      .map(d => `<option value="${esc(d)}"${d === cState.diff ? " selected" : ""}>${esc(d)}</option>`).join("");
+
+  const topP = [...byPlayer.values()].sort((a,b) => b.n - a.n || a.name.localeCompare(b.name))[0];
+  const topL = [...byLevel.values()].sort((a,b) => b.n - a.n || a.name.localeCompare(b.name))[0];
+  stats.innerHTML = `
+    <div class="stat"><b>${COMPS.length}</b><span>Total completions</span></div>
+    <div class="stat"><b>${byPlayer.size}</b><span>Players</span></div>
+    <div class="stat"><b>${byLevel.size}</b><span>Different levels</span></div>
+    <div class="stat"><b class="sm">${esc(topL.name)}</b><span>Most beaten, ${topL.n} clear${topL.n === 1 ? "" : "s"}</span></div>
+    <div class="stat"><b class="sm">${esc(topP.name)}</b><span>Top player, ${topP.n} clear${topP.n === 1 ? "" : "s"}</span></div>`;
+
+  const q = cState.q.trim().toLowerCase();
+  const items = COMPS
+    .filter(c => cState.diff === "all" || c.difficulty === cState.diff)
+    .filter(c => cState.player === "all" || pkey(c.player) === cState.player)
+    .filter(c => !q || [c.level_name, c.creator, c.player].some(s => (s || "").toLowerCase().includes(q)))
+    .sort(SORTERS[cState.sort]);
+  cShown = items;
+  count.textContent = `Showing ${items.length} of ${COMPS.length}`;
+  if (!items.length) return list.innerHTML = emptyBox("Nothing here", "No completions match those filters.");
+
+  const rm = (c, isFirst, isLast) => isAdmin ? `
+    <span style="display:inline-flex; gap:3px; align-items:center; margin-left:6px;">
+      <button class="mini" data-act="moveup" data-id="${esc(c.id)}" ${isFirst ? 'disabled' : ''} title="Move placement up">▲</button>
+      <button class="mini" data-act="movedown" data-id="${esc(c.id)}" ${isLast ? 'disabled' : ''} title="Move placement down">▼</button>
+      <button class="mini" data-act="editcomp" data-id="${esc(c.id)}">Edit</button>
+      <button class="mini danger" data-act="delcomp" data-id="${esc(c.id)}">Remove</button>
+    </span>
+  ` : "";
+  
+  const diffBadge = c => c.difficulty ? `<span class="badge diff">${esc(c.difficulty)}</span>` : "";
+  
+  const rankBadge = lName => {
+    const r = getLevelRank(lName);
+    if (!r) return "";
+    return `<span class="badge ${r <= 3 ? "gold-badge" : "rank-badge"}">#${r}</span>`;
+  };
+
+  const meta = c => [c.attempts ? `${c.attempts} attempt${c.attempts === 1 ? "" : "s"}` : "", fmtDate(c.completed_on)].filter(Boolean).map(esc).join(" &middot; ");
+
+  if (cState.view === "feed"){
+    list.innerHTML = items.map((c, i) => {
+      if (editingCompId === c.id) {
+        return `
+          <div class="comp">
+            <form class="inline-edit-box" data-editcompid="${c.id}" style="width:100%;">
+              <div style="font-weight:bold; width:100%; margin-bottom:4px;">Edit Placement: ${esc(c.player)} - ${esc(c.level_name)}</div>
+              <input name="level_name" placeholder="Level name" value="${esc(c.level_name)}" required style="flex:1; min-width:130px;">
+              <input name="creator" placeholder="Creator" value="${esc(c.creator || '')}" style="flex:1; min-width:110px;">
+              <input name="player" placeholder="Player" value="${esc(c.player)}" required style="flex:1; min-width:110px;">
+              <select name="difficulty" style="min-width:120px;">
+                <option value="">Difficulty</option>
+                ${DIFFS.map(d => `<option value="${esc(d)}"${c.difficulty === d ? ' selected' : ''}>${esc(d)}</option>`).join('')}
+              </select>
+              <input name="attempts" type="number" min="1" placeholder="Attempts" value="${c.attempts || ''}" style="width:90px;">
+              <input name="completed_on" type="date" value="${c.completed_on || ''}" style="min-width:130px;">
+              <input name="video" type="url" placeholder="Video URL" value="${esc(c.video || '')}" style="flex:1; min-width:140px;">
+              <input name="position" type="number" min="1" placeholder="Pos" value="${c.position || ''}" style="width:70px;" title="Placement Position">
+              <button class="btn mini" type="submit">Save</button>
+              <button class="btn ghost mini" type="button" onclick="editingCompId=null; renderCompletions();">Cancel</button>
+            </form>
+          </div>
+        `;
+      }
+      return `
+        <div class="comp">
+          <span>
+            ${rankBadge(c.level_name)}
+            <span class="name level-click" data-lname="${esc(c.level_name)}">${esc(c.level_name)}</span>${c.creator ? ` <span class="by">by ${esc(c.creator)}</span>` : ""}<br>
+            <span class="by">${diffBadge(c)}<span class="who">${esc(c.player)}</span>${meta(c) ? " &middot; " + meta(c) : ""}</span>
+          </span>
+          ${watch(c.video)}${rm(c, i === 0, i === items.length - 1)}
+        </div>`;
+    }).join("");
+  } else if (cState.view === "player"){
+    const groups = new Map();
+    items.forEach(c => {
+      const k = pkey(c.player);
+      if (!groups.has(k)) groups.set(k, { name:c.player.trim(), items:[] });
+      groups.get(k).items.push(c);
+    });
+    list.innerHTML = [...groups.values()]
+      .sort((a,b) => b.items.length - a.items.length || a.name.localeCompare(b.name))
+      .map((g,i) => `
+      <div class="card pcard">
+        <h3><span>#${i + 1} ${esc(g.name)}</span><span class="by">${g.items.length} clear${g.items.length === 1 ? "" : "s"}</span></h3>
+        <ul>${g.items.map((c, idx) => {
+          if (editingCompId === c.id) {
+            return `<li style="margin:8px 0;">
+              <form class="inline-edit-box" data-editcompid="${c.id}" style="width:100%;">
+                <div style="font-weight:bold; width:100%; margin-bottom:4px;">Edit Placement: ${esc(c.level_name)}</div>
+                <input name="level_name" placeholder="Level name" value="${esc(c.level_name)}" required style="flex:1; min-width:130px;">
+                <input name="creator" placeholder="Creator" value="${esc(c.creator || '')}" style="flex:1; min-width:110px;">
+                <input name="player" placeholder="Player" value="${esc(c.player)}" required style="flex:1; min-width:110px;">
+                <select name="difficulty" style="min-width:120px;">
+                  <option value="">Difficulty</option>
+                  ${DIFFS.map(d => `<option value="${esc(d)}"${c.difficulty === d ? ' selected' : ''}>${esc(d)}</option>`).join('')}
+                </select>
+                <input name="attempts" type="number" min="1" placeholder="Attempts" value="${c.attempts || ''}" style="width:90px;">
+                <input name="completed_on" type="date" value="${c.completed_on || ''}" style="min-width:130px;">
+                <input name="video" type="url" placeholder="Video URL" value="${esc(c.video || '')}" style="flex:1; min-width:140px;">
+                <input name="position" type="number" min="1" placeholder="Pos" value="${c.position || ''}" style="width:70px;">
+                <button class="btn mini" type="submit">Save</button>
+                <button class="btn ghost mini" type="button" onclick="editingCompId=null; renderCompletions();">Cancel</button>
+              </form>
+            </li>`;
+          }
+          return `<li>${rankBadge(c.level_name)} <span class="level-click" data-lname="${esc(c.level_name)}"><b>${esc(c.level_name)}</b></span>${diffBadge(c)}<span class="by">${meta(c)}</span> ${watch(c.video)}${rm(c, idx === 0, idx === g.items.length - 1)}</li>`;
+        }).join("")}</ul>
+      </div>`).join("");
+  } else {
+    const groups = new Map();
+    items.forEach(c => {
+      const k = pkey(c.level_name);
+      if (!groups.has(k)) groups.set(k, { name:c.level_name.trim(), creator:c.creator, items:[] });
+      const g = groups.get(k); g.creator = g.creator || c.creator; g.items.push(c);
+    });
+    list.innerHTML = [...groups.values()]
+      .sort((a,b) => {
+        const rA = getLevelRank(a.name) || 99999;
+        const rB = getLevelRank(b.name) || 99999;
+        if (rA !== rB) return rA - rB;
+        return b.items.length - a.items.length || a.name.localeCompare(b.name);
+      })
+      .map(g => `
+      <div class="card pcard">
+        <h3><span class="level-click" data-lname="${esc(g.name)}">${rankBadge(g.name)} ${esc(g.name)}${g.creator ? ` <span class="by">by ${esc(g.creator)}</span>` : ""}</span><span class="by">${g.items.length} clear${g.items.length === 1 ? "" : "s"}</span></h3>
+        <ul>${g.items.map((c, idx) => {
+          if (editingCompId === c.id) {
+            return `<li style="margin:8px 0;">
+              <form class="inline-edit-box" data-editcompid="${c.id}" style="width:100%;">
+                <div style="font-weight:bold; width:100%; margin-bottom:4px;">Edit Placement: ${esc(c.player)}</div>
+                <input name="level_name" placeholder="Level name" value="${esc(c.level_name)}" required style="flex:1; min-width:130px;">
+                <input name="creator" placeholder="Creator" value="${esc(c.creator || '')}" style="flex:1; min-width:110px;">
+                <input name="player" placeholder="Player" value="${esc(c.player)}" required style="flex:1; min-width:110px;">
+                <select name="difficulty" style="min-width:120px;">
+                  <option value="">Difficulty</option>
+                  ${DIFFS.map(d => `<option value="${esc(d)}"${c.difficulty === d ? ' selected' : ''}>${esc(d)}</option>`).join('')}
+                </select>
+                <input name="attempts" type="number" min="1" placeholder="Attempts" value="${c.attempts || ''}" style="width:90px;">
+                <input name="completed_on" type="date" value="${c.completed_on || ''}" style="min-width:130px;">
+                <input name="video" type="url" placeholder="Video URL" value="${esc(c.video || '')}" style="flex:1; min-width:140px;">
+                <input name="position" type="number" min="1" placeholder="Pos" value="${c.position || ''}" style="width:70px;">
+                <button class="btn mini" type="submit">Save</button>
+                <button class="btn ghost mini" type="button" onclick="editingCompId=null; renderCompletions();">Cancel</button>
+              </form>
+            </li>`;
+          }
+          return `<li><span class="who">${esc(c.player)}</span>${diffBadge(c)}<span class="by">${meta(c)}</span> ${watch(c.video)}${rm(c, idx === 0, idx === g.items.length - 1)}</li>`;
+        }).join("")}</ul>
+      </div>`).join("");
+  }
+}
+
+function exportCompletions(){
+  if (!cShown.length) return toast("Nothing to export", true);
+  const cell = v => { let s = String(v ?? ""); if (/^[=+\-@]/.test(s)) s = "'" + s; return `"${s.replace(/"/g, '""')}"`; };
+  const rows = [["Level","Creator","Player","Difficulty","Attempts","Completed on","Video"],
+    ...cShown.map(c => [c.level_name, c.creator, c.player, c.difficulty, c.attempts, c.completed_on, c.video])];
+  const blob = new Blob([rows.map(r => r.map(cell).join(",")).join("\r\n")], { type:"text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "bcl-completions.csv"; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  toast(`Exported ${cShown.length} rows`);
+}
+
+function renderAll(){ renderLevels(); renderPlayers(); renderAdmin(); renderCompAdmin(); renderCompletions(); }
+
+/* ---------- EVENT LISTENERS ---------- */
+let playerQuery = "";
+$("#playerSearch").oninput = e => { playerQuery = e.target.value.trim().toLowerCase(); renderPlayers(); };
+$("#search").oninput = e => { query = e.target.value; renderLevels(); };
+
+$("#levels").addEventListener("click", e => {
+  const row = e.target.closest(".row");
+  if (row) {
+    lastPage = "list";
+    renderLevelDetail(row.dataset.id);
+  }
+});
+
+$("#levelDetailContent").addEventListener("click", async e => {
+  const delBtn = e.target.closest("[data-delrec]");
+  if (delBtn) {
+    await deleteRecord(delBtn.dataset.delrec);
+    if (currentLevelId) renderLevelDetail(currentLevelId);
+    return;
+  }
+
+  const editBtn = e.target.closest("[data-editrec]");
+  if (editBtn) {
+    editingRecordId = editBtn.dataset.editrec;
+    if (currentLevelId) renderLevelDetail(currentLevelId);
+    return;
+  }
+
+  const delCompBtn = e.target.closest("[data-act='delcomp']");
+  if (delCompBtn) {
+    await deleteCompletion(delCompBtn.dataset.id);
+    const lvlTitle = $("#levelDetailContent h2")?.textContent?.replace(/^#\d+\s*-\s*/, '').trim();
+    if (lvlTitle) renderCompletionLevelDetail(lvlTitle);
+    return;
+  }
+
+  const editCompBtn = e.target.closest("[data-act='editcomp']");
+  if (editCompBtn) {
+    editingCompId = editCompBtn.dataset.id;
+    const lvlTitle = $("#levelDetailContent h2")?.textContent?.replace(/^#\d+\s*-\s*/, '').trim();
+    if (lvlTitle) renderCompletionLevelDetail(lvlTitle);
+    return;
+  }
+
+  const mUpComp = e.target.closest("[data-act='moveup']");
+  if (mUpComp) {
+    await moveCompletion(mUpComp.dataset.id, -1, mUpComp, SORTERS.custom);
+    const lvlTitle = $("#levelDetailContent h2")?.textContent?.replace(/^#\d+\s*-\s*/, '').trim();
+    if (lvlTitle) renderCompletionLevelDetail(lvlTitle);
+    return;
+  }
+
+  const mDownComp = e.target.closest("[data-act='movedown']");
+  if (mDownComp) {
+    await moveCompletion(mDownComp.dataset.id, 1, mDownComp, SORTERS.custom);
+    const lvlTitle = $("#levelDetailContent h2")?.textContent?.replace(/^#\d+\s*-\s*/, '').trim();
+    if (lvlTitle) renderCompletionLevelDetail(lvlTitle);
+    return;
+  }
+});
+
+$("#levelDetailContent").addEventListener("submit", async e => {
+  const editBox = e.target.closest("[data-editrecid]");
+  if (editBox) {
+    e.preventDefault();
+    const rid = editBox.dataset.editrecid;
+    const pct = parseInt(e.target.editPercent.value) || 100;
+    const vid = e.target.editVideo.value.trim() || null;
+    await updateRecord(rid, { percent: pct, video: vid });
+    editingRecordId = null;
+    if (currentLevelId) renderLevelDetail(currentLevelId);
+    return;
+  }
+
+  const editCompForm = e.target.closest("[data-editcompid]");
+  if (editCompForm) {
+    e.preventDefault();
+    const id = editCompForm.dataset.editcompid;
+    const data = {
+      level_name: editCompForm.level_name.value.trim(),
+      creator: editCompForm.creator.value.trim() || null,
+      player: editCompForm.player.value.trim(),
+      difficulty: editCompForm.difficulty.value || null,
+      attempts: parseInt(editCompForm.attempts.value) || null,
+      completed_on: editCompForm.completed_on.value || null,
+      video: editCompForm.video.value.trim() || null
+    };
+    if (editCompForm.position && editCompForm.position.value) {
+      data.position = parseInt(editCompForm.position.value);
+    }
+    await updateCompletion(id, data);
+    const lvlTitle = editCompForm.dataset.fromdetail || editCompForm.level_name.value.trim();
+    if (lvlTitle) renderCompletionLevelDetail(lvlTitle);
+  }
+});
+
+$("#adminBody").addEventListener("submit", async e => {
+  e.preventDefault();
+  if (e.target.id === "loginForm"){
+    const { error } = await db.auth.signInWithPassword({ email:e.target.email.value, password:e.target.password.value });
+    if (error) toast(error.message, true);
+  }
+});
+$("#adminBody").addEventListener("click", async e => {
+  if (e.target.id === "logout") await db.auth.signOut();
+});
+
+$("#cSearch").oninput = e => { cState.q = e.target.value; renderCompletions(); };
+$("#cPlayer").onchange = e => { cState.player = e.target.value; renderCompletions(); };
+$("#cDiff").onchange = e => { cState.diff = e.target.value; renderCompletions(); };
+$("#cSort").onchange = e => { cState.sort = e.target.value; renderCompletions(); };
+$("#cExport").onclick = exportCompletions;
+$("#cView").querySelectorAll("button").forEach(b => b.onclick = () => {
+  cState.view = b.dataset.v;
+  $("#cView").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  renderCompletions();
+});
+
+$("#compList").addEventListener("click", async e => {
+  const del = e.target.closest("[data-act='delcomp']");
+  if (del) return deleteCompletion(del.dataset.id);
+
+  const edit = e.target.closest("[data-act='editcomp']");
+  if (edit) {
+    editingCompId = edit.dataset.id;
+    renderCompletions();
+    return;
+  }
+
+  const mUp = e.target.closest("[data-act='moveup']");
+  if (mUp) {
+    await moveCompletion(mUp.dataset.id, -1, mUp);
+    return;
+  }
+
+  const mDown = e.target.closest("[data-act='movedown']");
+  if (mDown) {
+    await moveCompletion(mDown.dataset.id, 1, mDown);
+    return;
+  }
+
+  const lvlClick = e.target.closest(".level-click");
+  if (lvlClick) {
+    lastPage = "completions";
+    renderCompletionLevelDetail(lvlClick.dataset.lname);
+  }
+});
+
+$("#compList").addEventListener("submit", async e => {
+  const form = e.target.closest("[data-editcompid]");
+  if (form) {
+    e.preventDefault();
+    const id = form.dataset.editcompid;
+    const data = {
+      level_name: form.level_name.value.trim(),
+      creator: form.creator.value.trim() || null,
+      player: form.player.value.trim(),
+      difficulty: form.difficulty.value || null,
+      attempts: parseInt(form.attempts.value) || null,
+      completed_on: form.completed_on.value || null,
+      video: form.video.value.trim() || null
+    };
+    if (form.position && form.position.value) {
+      data.position = parseInt(form.position.value);
+    }
+    await updateCompletion(id, data);
+  }
+});
+
+$("#compAdmin").addEventListener("submit", async e => {
+  e.preventDefault();
+  if (e.target.id === "compForm") await addCompletion(e.target);
+});
+
+if (configured){
+  db.auth.onAuthStateChange((_ev, session) => { isAdmin = !!session; renderAll(); });
+}
+renderTabs(); loadLevels(); loadCompletions();
+{
+  const start = location.hash.slice(1);
+  if (document.getElementById(start)?.classList.contains("page")) navigateToPage(start);
+}
+
+const toTopBtn = document.getElementById("toTop");
+addEventListener("scroll", () => toTopBtn.classList.toggle("show", scrollY > 600), { passive:true });
+toTopBtn.onclick = () => scrollTo({ top:0 });
+</script>
+</body>
+</html>
